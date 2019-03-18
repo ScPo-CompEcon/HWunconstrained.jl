@@ -50,3 +50,7 @@
     git commit -m 'my homework'
     git push
     ```
+
+## License
+
+Please observe that this repo is part of the [Sciences Po CompEcon Organisation](https://github.com/ScPo-CompEcon) and therefore subject to the license detailed at the bottom of [The Syllabus repo](https://github.com/ScPo-CompEcon/Syllabus).
