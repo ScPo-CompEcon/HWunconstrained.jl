@@ -7,7 +7,7 @@ module HWunconstrained
 	using LinearAlgebra
 
 
-    export maximize_like_grad, runAll, makeData
+    export maximize_like_grad, makeData
 
 
 
