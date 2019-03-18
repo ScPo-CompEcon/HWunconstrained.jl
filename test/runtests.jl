@@ -1,65 +1,78 @@
-using HWunconstrained
 using Test
+using GLM
+using Statistics
+using DataFrames
+using Calculus
+
 
 @testset "HWunconstrained.jl" begin
+
 
 @testset "basics" begin
 
 	@testset "Test Data Construction" begin
 
+		# create data
 		d = makeData(18)
-		# test the the constructed dataframe has 18 rows
 
-		# test that the generated response vector y has a mean that is smaller than 1 ( not all responses are equal 1!)
+		# test dataframe has 18 rows
+
+		# test generated y vector has a mean less than 1
 	end
 
-	@testset "Test that likelihood returns a real number" begin
+	@testset "Test Return value of likelihood" begin
 
 
 	end
 
-	@testset "Test gradient returns nothing" begin
+	@testset "Test return value of gradient is nothing" begin
 		# gradient should not return anything,
 		# but modify a vector in place.
 
 	end
 
 
-	@testset "test gradient vs finite difference approximation" begin
-
+	@testset "gradient vs finite difference" begin
 	end
 end
 
 @testset "test maximization results" begin
 
-	ttol = 2e-1  # test tolerance
+	ttol = 2e-1
 
 	@testset "maximize returns approximate result" begin
-
+		m = HWunconstrained.maximize_like();
+		d = makeData();
+		@test maximum(abs,m.minimizer .- d["beta"]) < ttol
 	end
 
 	@testset "maximize_grad returns accurate result" begin
-
+		m = HWunconstrained.maximize_like_grad();
+		d = makeData();
+		@test maximum(abs,m.minimizer .- d["beta"]) < ttol
 	end
 
 	@testset "maximize_grad_hess returns accurate result" begin
-                                                
-                 
-                                                    
+		m = HWunconstrained.maximize_like_grad_hess();
+		d = makeData();
+		@test maximum(abs,m.minimizer .- d["beta"]) < ttol
 	end
 
 	@testset "gradient is close to zero at max like estimate" begin
-                     
+		m = HWunconstrained.maximize_like_grad();
+		d = makeData()
+		gradvec = ones(length(d["beta"]))
+		r = HWunconstrained.grad!(gradvec,m.minimizer,d)
 
-                                   
+		@test r == nothing 
+
+		@test maximum(abs,gradvec) < 1e-6
 
 	end
 
 end
 
-@testset "test estimates and std errors against GLM" begin
-	
-	# generate GLM estimates from our data
+@testset "test against GLM" begin
 
 	@testset "estimates vs GLM" begin
 
