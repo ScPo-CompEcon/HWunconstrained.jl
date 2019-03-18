@@ -17,10 +17,10 @@
 
 ## HOW TO DO THIS HOMEWORK
 
-1. github classroom will create a fork of this for you.
+1. click on **fork** top right on this window. After the fork is created
 2. in your local julia session, you need to do
     ```julia
-    ] dev https://github.com/YOUR_GITHUB_USER/HWunconstrained.jl.git
+    ] dev https://github.com/YOUR_GITHUB_USERNAME/HWunconstrained.jl.git
     ```
 3. next, go to the newly created directory to instantiate the package:
     ```julia
