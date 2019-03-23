@@ -27,12 +27,9 @@ module HWunconstrained
 		#distr
 		norm = Normal()
 		#setting seed
-		Random.seed!(9556)
+		Random.seed!(9550)
 		#generating X
-		X = zeros(n,3)
-		for i in 1:n, j in 1:3
-			X[i,j] = randn()
-		end
+		X = randn(n,3)
 		#generating y
 		y = zeros(n)
 		for i in 1:n
