@@ -16,6 +16,7 @@ using Calculus
 		d = makeData(18)
 
 		# test dataframe has 18 rows
+		size(d,1) == 18
 
 		# test generated y vector has a mean less than 1
 	end
@@ -64,7 +65,7 @@ end
 		gradvec = ones(length(d["beta"]))
 		r = HWunconstrained.grad!(gradvec,m.minimizer,d)
 
-		@test r == nothing 
+		@test r == nothing
 
 		@test maximum(abs,gradvec) < 1e-6
 
@@ -86,5 +87,5 @@ end
 
 end
 
-    
+
 end
