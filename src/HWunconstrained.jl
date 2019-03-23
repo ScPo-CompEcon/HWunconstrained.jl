@@ -35,12 +35,9 @@ module HWunconstrained
 
 	# log likelihood function at x
 	function loglik(betas::Vector,d::Dict)
-
-
-
-
-
-
+		singlelik = d["y"].*log(cdf(d["norm"],d["X"]*betas)) + (1-d["y"]).*log(1-cdf(d["norm"],d["X"]*betas))
+		n = size(singlelik,1)
+		return sum(singlelik)/n
 	end
 
 	# gradient of the likelihood at x
@@ -119,12 +116,13 @@ module HWunconstrained
 
 	# function that maximizes the log likelihood without the gradient
 	# with a call to `optimize` and returns the result
-	function maximize_like(x0=[0.8,1.0,-0.1],meth=NelderMead())
+	function maximize_like(loglik,d,x0=[0.8,1.0,-0.1],meth=NelderMead())
 
-
+		#result = optimize(arg -> loglik(arg,d), x0, meth)
 
 	end
-	function maximize_like_helpNM(x0=[ 1; 1.5; -0.5 ],meth=NelderMead())
+
+	function maximize_like_helpNM(d,x0=[ 1; 1.5; -0.5 ],meth=NelderMead())
 
 
 
@@ -134,15 +132,12 @@ module HWunconstrained
 
 	# function that maximizes the log likelihood with the gradient
 	# with a call to `optimize` and returns the result
-	function maximize_like_grad(x0=[0.8,1.0,-0.1],meth=BFGS())
-
-
-
-
+	function maximize_like_grad(loglik, d, grad!, x0=[0.8,1.0,-0.1],meth=BFGS())
+		#result = optimize(arg -> loglik(arg,d), (g,arg)->grad!(g,arg,d), x0, meth)
 	end
 
-	function maximize_like_grad_hess(x0=[0.8,1.0,-0.1],meth=Newton())
-
+	function maximize_like_grad_hess(loglik, d, grad!, hessian!, x0=[0.8,1.0,-0.1],meth=Newton())
+		#result = optimize(arg -> loglik(arg,d), (g,arg)->grad!(g,arg,d), (h,arg)->hessian!(g,arg,d), x0, meth)
 
 
 
@@ -165,68 +160,40 @@ module HWunconstrained
 	# we are looking for a figure with 3 subplots, where each subplot
 	# varies one of the parameters, holding the others fixed at the true value
 	# we want to see whether there is a global minimum of the likelihood at the the true value
-	function plotLike()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	function plotLike(d::Dict, len=100)
+		beta1 = ones(len,1)*transpose(d["beta"])
+		beta2 = beta1
+		beta3 = beta1
+		minval = 0.5
+		maxval = 1.5
+		factor = reshape(range(minval, maxval, length=len),len, 1)
+		beta1[:,1] = beta1[:,1].*factor
+		beta2[:,2] = beta2[:,2].*factor
+		beta3[:,3] = beta3[:,3].*factor
+		for i in eachrow(beta1)
+			lik1[i,1] =  loglik(beta1[i,:]::Vector,d::Dict)
+			lik2[i,1] =  loglik(beta2[i,:]::Vector,d::Dict)
+			lik3[i,1] =  loglik(beta3[i,:]::Vector,d::Dict)
+		end
+		plot([plot(Lik1,beta1[:,1],label="first parameter"),plot(Lik2,beta2[:,2],label="second parameter"),plot(Lik3,beta3[:,3],label="third parameter")]...)
 	end
-	function plotGrad()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	function plotGrad(d::Dict, len=100)
+		beta1 = ones(len,1)*transpose(d["beta"])
+		beta2 = beta1
+		beta3 = beta1
+		minval = 0.5
+		maxval = 1.5
+		factor = reshape(range(minval, maxval, length=len),len, 1)
+		beta1[:,1] = beta1[:,1].*factor
+		beta2[:,2] = beta2[:,2].*factor
+		beta3[:,3] = beta3[:,3].*factor
+		for i in eachrow(beta1)
+			grad1[i,1] = grad!(beta1[i,:]::Vector,d::Dict)
+			grad2[i,1] = grad!(beta2[i,:]::Vector,d::Dict)
+			grad3[i,1] = grad!(beta3[i,:]::Vector,d::Dict)
+		end
+		plot([plot(grad1,beta1[:,1],label="first parameter"),plot(grad2,beta2[:,2],label="second parameter"),plot(grad3,beta3[:,3],label="third parameter")]...)
 	end
 
 
