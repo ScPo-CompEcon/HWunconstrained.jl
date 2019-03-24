@@ -16,8 +16,9 @@ using Calculus
 		d = makeData(18)
 
 		# test dataframe has 18 rows
-
+		@test size(d["y"])[1] == 18
 		# test generated y vector has a mean less than 1
+		@test mean(d["y"]) < 1
 	end
 
 	@testset "Test Return value of likelihood" begin
@@ -33,6 +34,9 @@ using Calculus
 
 
 	@testset "gradient vs finite difference" begin
+		d = makeData()
+		b = [0.8,1.0,-0.1]
+		@test Calculus.gradient(arg -> loglik(arg, d)) == grad!(zeros(3), b, d)
 	end
 end
 
@@ -64,7 +68,7 @@ end
 		gradvec = ones(length(d["beta"]))
 		r = HWunconstrained.grad!(gradvec,m.minimizer,d)
 
-		@test r == nothing 
+		@test r == nothing
 
 		@test maximum(abs,gradvec) < 1e-6
 
@@ -86,5 +90,5 @@ end
 
 end
 
-    
+
 end
