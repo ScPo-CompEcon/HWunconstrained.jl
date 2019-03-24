@@ -35,11 +35,12 @@ module HWunconstrained
 
 	# log likelihood function at x
 	function loglik(betas::Vector,d::Dict)
-		singlelik = d["y"].*log(cdf(d["norm"],d["X"]*betas)) + (1-d["y"]).*log(1-cdf(d["norm"],d["X"]*betas))
-		n = size(singlelik,1)
-		return sum(singlelik)/n
+	    y = d["y"]
+	    X = d["X"]
+	    singlelik = y.*log.(cdf.(d["dist"],X*betas)) + (1-y).*log.(1-cdf.(d["dist"],X*betas))
+	    n = size(singlelik,1)
+	    return sum(singlelik)/n
 	end
-
 	# gradient of the likelihood at x
 	function grad!(storage::Vector,betas::Vector,d)
 
@@ -113,12 +114,12 @@ module HWunconstrained
 	function se(betas::Vector,d::Dict)
 
 	end
-
+	#result = optimize(arg -> loglik(arg,d), x0, meth)
 	# function that maximizes the log likelihood without the gradient
 	# with a call to `optimize` and returns the result
 	function maximize_like(loglik,d,x0=[0.8,1.0,-0.1],meth=NelderMead())
 
-		#result = optimize(arg -> loglik(arg,d), x0, meth)
+
 
 	end
 
@@ -129,11 +130,11 @@ module HWunconstrained
 	end
 
 
-
+	#result = optimize(arg -> loglik(arg,d), (g,arg)->grad!(g,arg,d), x0, meth)
 	# function that maximizes the log likelihood with the gradient
 	# with a call to `optimize` and returns the result
 	function maximize_like_grad(loglik, d, grad!, x0=[0.8,1.0,-0.1],meth=BFGS())
-		#result = optimize(arg -> loglik(arg,d), (g,arg)->grad!(g,arg,d), x0, meth)
+
 	end
 
 	function maximize_like_grad_hess(loglik, d, grad!, hessian!, x0=[0.8,1.0,-0.1],meth=Newton())
@@ -189,9 +190,12 @@ module HWunconstrained
 		beta2[:,2] = beta2[:,2].*factor
 		beta3[:,3] = beta3[:,3].*factor
 		for i in eachrow(beta1)
-			grad1[i,1] = grad!(beta1[i,:]::Vector,d::Dict)
-			grad2[i,1] = grad!(beta2[i,:]::Vector,d::Dict)
-			grad3[i,1] = grad!(beta3[i,:]::Vector,d::Dict)
+			grad!(G,beta1[i,:],d)
+			grad1[i,1] = G[1]
+			grad!(G,beta2[i,:],d)
+			grad2[i,1] = G[2])
+			grad!(G,beta3[i,:],d)
+			grad3[i,1] = G[3])
 		end
 		plot([plot(grad1,beta1[:,1],label="first parameter"),plot(grad2,beta2[:,2],label="second parameter"),plot(grad3,beta3[:,3],label="third parameter")]...)
 	end

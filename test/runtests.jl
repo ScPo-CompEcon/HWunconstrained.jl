@@ -16,24 +16,34 @@ using Calculus
 		d = makeData(18)
 
 		# test dataframe has 18 rows
-		size(d,1) == 18
+		@test size(d,1) == 18
 
 		# test generated y vector has a mean less than 1
 	end
 
 	@testset "Test Return value of likelihood" begin
 
-
+		@test size(HWunconstrained.loglik(d["beta"],d)) == 1
 	end
 
 	@testset "Test return value of gradient is nothing" begin
 		# gradient should not return anything,
 		# but modify a vector in place.
+		# your test
 
+		d = makeData()
+		G = zeros(n)
+		@test HWunconstrained.gradient!(G,d) == nothing
+# not look at whether G is correct
 	end
 
 
 	@testset "gradient vs finite difference" begin
+		d = makeData()
+		G = zeros(n)
+		HWunconstrained.gradient!(G,d)
+		F = Calculus.finite_difference( x-> loglik(x,d) d["beta"],:central)
+		@test G ~~ F
 	end
 end
 
