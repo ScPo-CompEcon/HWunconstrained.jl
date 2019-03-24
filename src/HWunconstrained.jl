@@ -7,7 +7,7 @@ module HWunconstrained
 	using LinearAlgebra
 
 
-    export maximize_like_grad, makeData
+    export maximize_like_grad, makeData, loglik, plotLike, grad!, plotGrad, maximize_like, maximize_like_grad
 
 
 
@@ -18,82 +18,44 @@ module HWunconstrained
 	# should/could return a dict with beta,numobs,X,y,norm)
 	# true coeff vector, number of obs, data matrix X, response vector y, and a type of parametric distribution for G.
 	function makeData(n=10_000)
-                         
-                     
- 		# your turn!           
-                              
-                                                    
-                         
-                        
-                    
-                                                                                     
-		return Dict("beta"=>beta,"n"=>numobs,"X"=>X,"y"=>y,"dist"=>norm)
+		numobs = n
+		beta = [1, 1.5, -0.5]
+		X = randn(n, length(beta))
+		eps = randn(n)
+		prob = X * beta + eps
+		y = [if i > 0 1 else 0 end for i in prob]
+		return Dict("beta"=>beta,"n"=>numobs,"X"=>X,"y"=>y,"dist"=>Normal())
 	end
 
 
 	# log likelihood function at x
 	function loglik(betas::Vector,d::Dict)
-                                  
-                                           
-                                                                                     
-                            
-                  
-
-	end
+		prob = cdf.(d["dist"], d["X"] * betas)
+		t = dot(d["y"], log.(prob))
+		f = dot(1 .- d["y"], log.(1 .- prob))
+		return t + f
+		end
 
 	# gradient of the likelihood at x
 	function grad!(storage::Vector,betas::Vector,d)
-                                  
-                                           
-                                           
-                                                                                                                     
-                
+		Xb = d["X"] * betas
+		t = d["y"] .* pdf.(d["dist"], Xb) ./ cdf.(d["dist"], Xb)
+		f = (1 .- d["y"]) .* pdf.(d["dist"], Xb) ./ (1 .- cdf.(d["dist"], Xb))
+		grad = sum((t .- f) .* d["X"], dims=1)
+		for i in 1:length(betas)
+			storage[i] = grad[i]
+		end
 	end
 
 	# hessian of the likelihood at x
 	function hessian!(storage::Matrix,betas::Vector,d)
-                                  
-                                           
-                             
-                                           
-                                                              
-                                                                                
-                    
-
-                           
-                           
-  
-                   
-                                         
-                    
-                               
-       
-                               
-      
-     
-                            
-                
 	end
 
 
 	function info_mat(betas::Vector,d)
-                                  
-                                           
-                             
-                                           
-
-                                          
-
-  
-                   
-                                         
-                                                                      
-     
-            
 	end
 
 	function inv_Info(betas::Vector,d)
-                        
 	end
 
 
@@ -102,10 +64,6 @@ module HWunconstrained
 	inverse of observed information matrix
 	"""
 	function inv_observedInfo(betas::Vector,d)
-                                        
-                     
-            
-        
 	end
 
 	"""
@@ -117,26 +75,21 @@ module HWunconstrained
 
 	# function that maximizes the log likelihood without the gradient
 	# with a call to `optimize` and returns the result
-	function maximize_like(x0=[0.8,1.0,-0.1],meth=NelderMead())
-                     
-                                                                                         
-            
+	function maximize_like(loglik::Function, d::Dict, x0=[0.8,1.0,-0.1],meth=NelderMead())
+		r = optimize(x->-loglik(x, d), x0, method=meth)
+		return r.minimizer
 	end
+
 	function maximize_like_helpNM(x0=[ 1; 1.5; -0.5 ],meth=NelderMead())
-                     
-                                                                                         
-            
 	end
 
 
 
 	# function that maximizes the log likelihood with the gradient
 	# with a call to `optimize` and returns the result
-	function maximize_like_grad(x0=[0.8,1.0,-0.1],meth=BFGS())
-                     
-                                      
-                                                                                                                               
-            
+	function maximize_like_grad(loglik::Function, grad!::Function, d::Dict, x0=[0.8,1.0,-0.1],meth=BFGS())
+		r = optimize(x->-loglik(x, d), (g, x)->grad!(g, x, d), x0, method=NelderMead())
+		return r.minimizer
 	end
 
 	function maximize_like_grad_hess(x0=[0.8,1.0,-0.1],meth=Newton())
@@ -163,68 +116,32 @@ module HWunconstrained
 	# we are looking for a figure with 3 subplots, where each subplot
 	# varies one of the parameters, holding the others fixed at the true value
 	# we want to see whether there is a global minimum of the likelihood at the the true value
-	function plotLike()
-                     
-             
-           
-                       
-                                         
-                                   
-                                        
-
-                      
-                             
-                  
-                                                      
-
-               
-                              
-                
-                      
-                                                                                                      
-                       
-                                                 
-      
-                                                                        
-                                                                
-                       
-     
-                
-
+	function plotLike(d::Dict, loglik::Function, step=0.01, start=-1, stop=2)
+		grid = collect(start:step:stop)					#Creates the grid
+		beta = repeat(d["beta"]', outer=length(grid))	#Creates a matrix of betas
+		ll = zeros(length(grid), size(beta, 2))			#Sets up the matrix of losses
+		for i in 1:size(beta, 2)
+			mat = hcat(hcat(beta[:,1:i - 1], grid), beta[:, i + 1:size(beta, 2)])	#Inputs the grid into one of the column of the betas
+			inp = getindex.([mat], 1:size(mat, 1), :)								#Transforms the matrix into arrays of arrays
+			ll[:, i] = loglik.(inp, Ref(d))											#Broadcasts the loglik function
+		end
+		plot(grid, ll, layout=(size(beta, 2), 1))
 	end
-	function plotGrad()
-                     
-             
-           
-                       
-                
-                         
-                                         
-                                   
-                                        
 
-                      
-                             
-                  
-                                                      
-
-               
-                              
-        
-                
-          
-                      
-                                                                                                      
-                         
-                                             
-                       
-      
-                                                                                              
-                                                                
-                                                   
-                       
-     
-                
+	function plotGrad(d::Dict, loglik::Function, step=0.01, start=-1, stop=2)
+		grid = collect(start:step:stop)
+		beta = repeat(d["beta"]', outer=length(grid))
+		len = size(beta, 2)
+		ll = zeros(length(grid), len)
+		G = zeros(length(grid), len)
+		G = getindex.([G], 1:size(G, 1), :)
+		for i in 1:len
+			mat = hcat(hcat(beta[:,1:i - 1], grid), beta[:, i + 1:len])
+			inp = getindex.([mat], 1:size(mat, 1), :)
+			grad!.(G, inp, Ref(d))
+			ll[:, i] = vcat(G'...)[:,i]
+		end
+		plot(grid, ll, layout=(len, 1))
 	end
 
 	

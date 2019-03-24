@@ -3,6 +3,7 @@ using GLM
 using Statistics
 using DataFrames
 using Calculus
+using HWunconstrained
 
 
 @testset "HWunconstrained.jl" begin
