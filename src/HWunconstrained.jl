@@ -120,7 +120,6 @@ end
 		nm = optimize(maximum_like, x0, meth)
 		return(nm)
 	end
-maximize_like()
 
 
 
