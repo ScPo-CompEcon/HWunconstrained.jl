@@ -2,7 +2,7 @@ using Test
 using GLM
 using Statistics
 using DataFrames
-using Calculus
+#using Calculus
 
 
 @testset "HWunconstrained.jl" begin
@@ -16,14 +16,14 @@ using Calculus
 		d = makeData(18)
 
 		# test dataframe has 18 rows
-		@test size(d,1) == 18
+		@test size(d["X"],1) == 18
 
 		# test generated y vector has a mean less than 1
 	end
 
 	@testset "Test Return value of likelihood" begin
-
-		@test size(HWunconstrained.loglik(d["beta"],d)) == 1
+loglik
+		@test size(loglik(d["beta"],makeData()),1) == 1
 	end
 
 	@testset "Test return value of gradient is nothing" begin
@@ -32,18 +32,19 @@ using Calculus
 		# your test
 
 		d = makeData()
-		G = zeros(n)
-		@test HWunconstrained.gradient!(G,d) == nothing
+		G = zeros(d["n"])
+		beta = d["beta"]
+		@test HWunconstrained.grad!(G, beta, d) == nothing
 # not look at whether G is correct
 	end
 
-
 	@testset "gradient vs finite difference" begin
 		d = makeData()
-		G = zeros(n)
-		HWunconstrained.gradient!(G,d)
-		F = Calculus.finite_difference( x-> loglik(x,d) d["beta"],:central)
-		@test G ~~ F
+		G = zeros(d["n"])
+		beta = d["beta"]
+		HWunconstrained.grad!(G,beta, d)
+		F = Calculus.finite_difference( x-> loglik(x,d), d["beta"],:central)
+		@test G ≈ F
 	end
 end
 
