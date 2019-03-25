@@ -2,7 +2,7 @@ using Test
 using GLM
 using Statistics
 using DataFrames
-#using Calculus
+using Calculus
 
 
 @testset "HWunconstrained.jl" begin
