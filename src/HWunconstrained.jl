@@ -7,8 +7,7 @@ module HWunconstrained
 	using LinearAlgebra
 
 
-    export maximize_like_grad, makeData, loglik, grad!, maximize_like, plotLike,
-		plotGrad
+    export maximize_like_grad, makeData, loglik, grad!, maximize_like, plotLike, plotGrad
 
 
 
@@ -35,21 +34,6 @@ module HWunconstrained
 		return (-1) * sum(lh) / d["n"]
 	end
 
-
-function loglik(betas::Vector,d::Dict)
-
-    l_i = zeros(length(d["y"]))
-    Φ = zeros(length(d["y"]))
-    for i in eachindex(d["y"])
-    Φ[i] = cdf(d["dist"], d["X"][i,:]' * betas)
-    l_i[i] = Φ[i]^(d["y"][i]) * (1 - Φ[i])^(1 - d["y"][i])
-    end
-
-    log_lik = -(1/d["n"]) * sum(log.(l_i))
-    return log_lik
-
-end
-
 	# gradient of the likelihood at x
 	function grad!(storage::Vector,betas::Vector,d)
 
@@ -61,9 +45,6 @@ end
 			storage[j] = sum(temp)
 		end
 	end
-storage=zeros(3)
-grad!(storage, makeData()["beta"], makeData())
-
 
 
 	# hessian of the likelihood at x
@@ -124,7 +105,6 @@ grad!(storage, makeData()["beta"], makeData())
 		nm = optimize(maximum_like, x0, meth)
 		return(nm)
 	end
-maximize_like()
 
 
 
